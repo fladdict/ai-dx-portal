@@ -10,9 +10,12 @@ export function remarkMermaid() {
       if (node.lang !== 'mermaid' || !parent || index === undefined) return;
       let svg;
       try {
+        // 注意: サイト側の --bg/--fg と同名を渡すと、SVGの style="--bg:var(--bg)" が
+        // CSS変数の自己参照(循環)になり全色が無効=黒落ちする。別名を経由させる
+        // (.diagram 側で --mermaid-bg/--mermaid-fg にサイト変数を橋渡しする)
         svg = renderMermaidSVG(node.value, {
-          bg: 'var(--bg)',
-          fg: 'var(--fg)',
+          bg: 'var(--mermaid-bg, #ffffff)',
+          fg: 'var(--mermaid-fg, #1a1a1a)',
           transparent: true,
           font: 'Hiragino Sans',
         });

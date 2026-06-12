@@ -113,6 +113,9 @@ const base = import.meta.env.BASE_URL;
         border-radius: 8px;
         overflow-x: auto;
         text-align: center;
+        /* mermaid SVGへの色の橋渡し(remark-mermaid.mjs参照。同名直渡しは循環参照で黒落ちする) */
+        --mermaid-bg: var(--bg);
+        --mermaid-fg: var(--fg);
       }
       .diagram svg {
         max-width: 100%;
