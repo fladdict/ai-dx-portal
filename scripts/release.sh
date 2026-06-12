@@ -14,7 +14,7 @@ fi
 
 git checkout release
 # 公開対象をmainの最新で上書き(削除も反映するため一旦インデックスを同期)
-git checkout main -- .github .gitignore CHANGELOG.md astro.config.mjs package.json package-lock.json scripts sources src README.public.md
+git checkout main -- .github .gitignore CHANGELOG.md astro.config.mjs package.json package-lock.json public scripts sources src README.public.md
 cp README.public.md README.md
 git rm -q --cached README.public.md || true
 rm README.public.md
