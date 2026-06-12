@@ -70,10 +70,22 @@ const FLAGSHIPS = [
       本サイトは、数年後に組織がAIに「しっかり乗れている」状態から逆算して、
       いま何をすべきか・何を待つべきか・何を捨てるべきかを体系化した実践ナレッジである。
     </p>
+    <p class="hero-note">
+      専門用語が出てきたら<a href={`${base}glossary/`}>用語集</a>で確認できます。本文に出てくる用語は、自動で用語集のページにリンクされます。
+    </p>
   </section>
 
   <h2>読者別の入口</h2>
   <div class="entry-grid">
+    <div class="entry-card entry-card--starter">
+      <h3>はじめての方はここから</h3>
+      <p>AIに詳しくなくても読めるよう書いています。専門用語なしの入門ページから始めてください。</p>
+      <ol>
+        <li><a href={`${base}principles/getting-started/`}>入門ガイド</a> — 専門用語なしで全体像をつかむ</li>
+        <li><a href={`${base}readiness/self-assessment/`}>AI-Ready自己診断</a> — 自社の現在地を測る</li>
+        <li><a href={`${base}roadmap/first-90-days/`}>最初の90日</a> — 何から手をつけるかを決める</li>
+      </ol>
+    </div>
     <div class="entry-card">
       <h3>推進担当者はここから</h3>
       <p>着手順序を先に固め、方法論と部門別の具体策へ進む。</p>
@@ -188,6 +200,7 @@ const FLAGSHIPS = [
       border-radius: 8px;
       padding: 0.75rem 1.25rem 1rem;
     }
+    .entry-card--starter { border-color: var(--accent); }
     .entry-card h3 { margin: 0.25rem 0 0.5rem; font-size: 1rem; }
     .entry-card p { margin: 0 0 0.5rem; color: var(--muted); font-size: 0.85rem; }
     .entry-card ol { margin: 0; padding-left: 1.25rem; font-size: 0.9rem; }
@@ -204,6 +217,7 @@ const FLAGSHIPS = [
     .section-card h3 { margin: 0.25rem 0 0.5rem; font-size: 1rem; color: var(--accent); }
     .section-card p { margin: 0; color: var(--muted); font-size: 0.85rem; }
     .lead-note { color: var(--muted); font-size: 0.9rem; margin-top: -0.5rem; }
+    .hero-note { color: var(--muted); font-size: 0.9rem; }
     .table-wrap { overflow-x: auto; }
     .usage-table {
       border-collapse: collapse;
