@@ -37,15 +37,13 @@ const templates = [
   },
   {
     // 2026-06-12 外部評価対応(site-guidance必須修正1): 旧 kpi-definitions.csv から差し替え。
-    // TODO(順序依存): roadmap/kpi-design「成果をどう測るか」公開時に refHref/refLabel を
-    // `${base}roadmap/kpi-design/` / ロードマップ編「成果をどう測るか」へ切り替える
-    // (draftは公開ビルドに含まれずリンク切れになるため、公開までは return-structure を参照先とする)
+    // kpi-design 公開済み(2026-06-12)につき参照先を切り替え済み
     file: 'kpi-definition-sheet.csv',
     name: 'KPI定義シート',
     format: 'CSV',
     use: '健全性/組み込み/成果の3層のKPIを、定義・算出式・観測者・頻度・記録場所まで指定して管理する。',
-    refHref: `${base}roadmap/return-structure/`,
-    refLabel: 'ロードマップ編「AIDXのリターン構造」',
+    refHref: `${base}roadmap/kpi-design/`,
+    refLabel: 'ロードマップ編「成果をどう測るか」',
   },
 ];
 ---
