@@ -1,0 +1,193 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+const base = import.meta.env.BASE_URL;
+
+// 部門間の相対位置づけの正本(CLAUDE.md「部門間最上級の禁止」参照)。
+// 各部門ページは自部門の絶対評価のみを書き、部門間の比較はこの表でのみ管理する。
+// 値は各部門ページの summary に基づく編集部判定(出典なし)。
+// 本表の最終更新日(部門ページの summary 改訂に追随して手動更新。乖離は /aidx-audit 11c が照合)
+// 2026-06-12 文体改修: 格言調見出し平易化・内部用語排除・見立て定型句を自然文に置換(「正本」「編集部の見立て」を読者向け文言から除去)
+const UPDATED = '2026-06-11';
+
+// 主要パターン列は patterns コレクションの departments フィールドから自動生成する(手動転記しない)
+const allPatterns = await getCollection('patterns');
+const shortTitle = (t: string) => t.split(' — ')[0];
+const commonPatterns = allPatterns
+  .filter((p) => p.data.departments.includes('all'))
+  .sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99));
+const patternsFor = (slug: string) =>
+  allPatterns
+    .filter((p) => p.data.departments.includes(slug))
+    .sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99));
+
+const ROWS = [
+  {
+    slug: 'corporate-planning',
+    name: '事業企画・経営企画',
+    field: '情報収集・資料作成・分析の委任。自部門の再設計を全社展開の雛形にする',
+    risk: '中(経営会議資料への未検証出力の流入)',
+    ease: '高(業務と生成AIの主用途の重なりが大きい)',
+  },
+  {
+    slug: 'legal',
+    name: '法務',
+    field: '契約レビューの分解委任と、全社AIガバナンス整備の主管',
+    risk: '高(誤りが法令・契約に直結)',
+    ease: '中(活用は進めやすいが、検証を人間に残す設計が前提)',
+  },
+  {
+    slug: 'hr',
+    name: '人事',
+    field: '自部門業務の変革に加え、全社の人材再配置・評価制度・育成パイプラインの主管',
+    risk: '高(採用・処遇は公平性・説明可能性に直結。合否判断は人間保持)',
+    ease: '中(自部門の時短は早いが、主管業務の本丸は重い)',
+  },
+  {
+    slug: 'sales',
+    name: '営業',
+    field: '商談記録・提案書ドラフト・顧客リサーチ等の周辺業務の委任',
+    risk: '中(顧客向け文書の品質が信頼に直撃)',
+    ease: '高(委任候補が明確。CRM・商談データの構造化が前提)',
+  },
+  {
+    slug: 'marketing',
+    name: 'マーケティング',
+    field: 'コンテンツ制作の生成委任と、検証基準・ブランド整合の整備',
+    risk: '高(誤情報・誇大表現が対外的な信用毀損として返る)',
+    ease: '高(生成は容易。検証基準の整備が拡大の条件)',
+  },
+  {
+    slug: 'customer-support',
+    name: 'カスタマーサポート',
+    field: '問い合わせ一次対応の委任とエスカレーション設計、応対ログの資産化',
+    risk: '中(品質低下が解約・顧客感情に直結。例外を人が拾う設計が核心)',
+    ease: '高(効果の実証が厚い領域。ログ・FAQの整備が前提)',
+  },
+  {
+    slug: 'engineering',
+    name: '開発・エンジニアリング',
+    field: 'コード生成の委任と、レビューという既存の検証文化の全社への展開',
+    risk: '中(レビュー前提なら統制可能。検証の免除は負債の雪だるまに直結)',
+    ease: '高(利用は既に浸透。検証文化を制度として持つ)',
+  },
+  {
+    slug: 'finance',
+    name: '経理財務',
+    field: '仕訳・照合・経費チェックの委任と、内部統制(J-SOX)・監査証跡の再設計',
+    risk: '高(誤りがお金と法令に直結。全件・記名の人間検証)',
+    ease: '低〜中(委任候補は多いが、統制の再設計とセットでなければ進められない)',
+  },
+  {
+    slug: 'general-affairs',
+    name: '総務',
+    field: '社内問い合わせ・文書管理・規程管理。社内ナレッジ構造化の主管へ',
+    risk: '低〜中(社内向けが中心。検証と例外処理は総務に残す)',
+    ease: '中(規程・マニュアルの構造化が前提。botだけ先行は接地しない)',
+  },
+  {
+    slug: 'pr',
+    name: 'PR・広報',
+    field: '対外公表文のドラフト委任と、発信前の全件・記名ファクトチェック',
+    risk: '高(発信された誤りは取り消せない。危機管理の声明判断は委任しない)',
+    ease: '中(ドラフト委任は今すぐ可。AI利用の開示ポリシーの整備が先)',
+  },
+];
+---
+<Base title="部門別ガイド 索引・比較表" description="10部門の主戦場・検証リスク・着手のしやすさの比較表(部門間の相対位置づけはこの表で一元管理する)">
+  <h1>部門別ガイド — 索引・比較表</h1>
+
+  <p>
+    10部門のAIDXを3つの断面(主戦場/検証リスク水準/着手のしやすさ)で並べた索引である。
+    <strong>これは順位ではなく断面の違いを示す表である。</strong>
+    「進んでいる部門・遅れている部門」のランキングではなく、
+    どの部門も自部門の業務構造に固有の主戦場とリスク条件を持つ——その違いを一覧できるようにした。
+  </p>
+  <p class="note">
+    部門間の相対的な位置づけはこの表だけで管理し、各部門ページは自部門の評価のみを記述する。
+    各列の高/中/低に外部の出典はなく、各部門ページの要点に基づいて編集部が判定した値である
+    (判定基準は表の下「断面の読み方」に明記)。
+    本表の最終更新: {UPDATED}。
+  </p>
+  <p class="note">
+    全部門共通の業務パターン(どの行にも当てはまるため表外に示す):
+    {commonPatterns.map((p, i) => (
+      <span>{i > 0 && ' / '}<a href={`${base}patterns/${p.id}/`}>{shortTitle(p.data.title)}</a></span>
+    ))}
+  </p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>部門</th>
+          <th>主戦場</th>
+          <th>検証リスク水準</th>
+          <th>着手のしやすさ</th>
+          <th>主要パターン</th>
+        </tr>
+      </thead>
+      <tbody>
+        {ROWS.map((r) => (
+          <tr>
+            <td class="dept"><a href={`${base}departments/${r.slug}/`}>{r.name}</a></td>
+            <td>{r.field}</td>
+            <td>{r.risk}</td>
+            <td>{r.ease}</td>
+            <td>
+              {patternsFor(r.slug).length > 0
+                ? patternsFor(r.slug).map((p, i) => (
+                    <span>{i > 0 && ' / '}<a href={`${base}patterns/${p.id}/`}>{shortTitle(p.data.title)}</a></span>
+                  ))
+                : '—(共通パターンのみ)'}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>断面の読み方(高/中/低の判定基準)</h2>
+  <ul>
+    <li><strong>主戦場</strong>: その部門でAIDXの中心になる業務領域と役割の変化。</li>
+    <li>
+      <strong>検証リスク水準</strong>: 出力の誤りがどこに届くかで判定する。
+      <strong>高</strong>=誤りが法令・契約・お金・対外信用に直結する(全件・記名の人間検証が前提)/
+      <strong>中</strong>=誤りは顧客対応・経営判断に影響するが、送付・確定前の社内検証で食い止められる/
+      <strong>低</strong>=誤りが社内の手戻りで済む。
+      高リスクほど人間検証の義務化ラインが厳しくなる。各セルの括弧書きが当該部門の判定根拠である。
+    </li>
+    <li>
+      <strong>着手のしやすさ</strong>: 委任候補の明確さと、着手前に満たすべき前提条件の重さで判定する。
+      <strong>高</strong>=委任候補が明確で、既存のデータ・業務文化の延長で始められる/
+      <strong>中</strong>=データ構造化・基準整備等の前提整備が先行する/
+      <strong>低</strong>=統制・制度の再設計とセットでなければ進められない。
+      「高」は楽に進むという意味ではなく、入口が明確という意味である。各セルの括弧書きが当該部門の判定根拠である。
+    </li>
+    <li>いずれも「低〜中」のような併記は、部門内の業務によって水準が跨る場合を示す。</li>
+    <li><strong>主要パターン</strong>: その部門を主対象とする業務パターン(全部門共通の3パターンは表上部に別掲)。この列は各パターンページの対象部門指定から自動生成しており、手動転記しない。</li>
+  </ul>
+  <p>
+    どの断面で見るかによって最初に手をつける部門は変わる。読み方の原則は
+    <a href={`${base}roadmap/first-90-days/`}>最初の90日</a>と
+    <a href={`${base}organization/`}>組織・人材編</a>を参照のこと。
+  </p>
+
+  <style>
+    .note { color: var(--muted); font-size: 0.9rem; }
+    .table-wrap { overflow-x: auto; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.85rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: color-mix(in srgb, var(--fg) 5%, transparent); }
+    .dept { white-space: nowrap; font-weight: 600; }
+  </style>
+</Base>

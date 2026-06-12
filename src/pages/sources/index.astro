@@ -1,0 +1,237 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+const entries = await getCollection('sources');
+const sorted = entries.sort((a, b) => a.data.id.localeCompare(b.data.id));
+
+const counts = { high: 0, medium: 0, low: 0 } as Record<string, number>;
+for (const e of sorted) counts[e.data.reliability]++;
+
+// 逆引き: この出典をどのページが引いているか(各コレクションの sources フィールドから自動生成)
+const ARTICLE_SECTIONS = [
+  'principles',
+  'readiness',
+  'organization',
+  'roadmap',
+  'departments',
+  'patterns',
+  'anti-patterns',
+] as const;
+const citedBy = new Map<string, { section: string; slug: string; title: string }[]>();
+for (const section of ARTICLE_SECTIONS) {
+  const pages = await getCollection(section as any);
+  for (const page of pages as any[]) {
+    for (const srcId of page.data.sources ?? []) {
+      if (!citedBy.has(srcId)) citedBy.set(srcId, []);
+      citedBy.get(srcId)!.push({ section, slug: page.id, title: page.data.title });
+    }
+  }
+}
+
+// COI(利益相反)バッジ: 調査主体がAI関連の製品・サービスを販売する事業会社、またはその共同調査・
+// 自社研究であるもの(publisher の部分一致による編集部判定。新規ソース追加時はこの一覧を見直すこと)
+const VENDOR_COI_PATTERNS = [
+  'Anthropic',
+  'Microsoft',
+  'GitHub',
+  'Google',
+  'ServiceNow',
+  'ZoomInfo',
+  'Klarna',
+  'Getty',
+  'Menlo Ventures',
+  'Andreessen Horowitz',
+  'Coupa',
+  'Alibaba',
+  'BetterUp',
+  'Muck Rack',
+  'Works Human Intelligence',
+  'パーソル',
+  'サイバーエージェント',
+  'エイトレッド',
+  'NTTデータ',
+  '日鉄ソリューションズ',
+  'ピー・シー・エー',
+  'スマートキャンプ',
+  'キヤノンマーケティング',
+  '日本SPセンター',
+];
+const hasCoi = (publisher: string) => VENDOR_COI_PATTERNS.some((p) => publisher.includes(p));
+
+// 絞り込み用の選択肢
+const allTopics = [...new Set(sorted.flatMap((e) => e.data.topics))].sort();
+const allPublishers = [...new Set(sorted.map((e) => e.data.publisher))].sort();
+
+const base = import.meta.env.BASE_URL;
+
+const fmtDate = (d: Date | 'unknown') =>
+  d === 'unknown' ? '不明' : d.toISOString().slice(0, 10);
+---
+<Base title="出典一覧" description="本サイトの主張を支える出典の一覧(信頼度・取得日・引用ページの逆引き・利益相反の開示付き)">
+  <h1>出典一覧</h1>
+  <p>
+    本サイトの事実・数値はすべて以下の出典に出典IDで紐付けている。
+    全件が一次情報ではない——mediumには報道経由(孫引き)のソースが相当数含まれ、
+    その数値を引く本文側には「〜の報道によれば」の帰属表示を付けている。
+    信頼度(reliability)は high=政府・学術・調査機関・公式調査 /
+    medium=大手メディア・アナリスト論評 / low=個人発信 の基準で付与している。
+  </p>
+  <p class="note">
+    <span class="badge coi">COI</span> は、調査主体がAI関連の製品・サービスを販売する事業会社
+    (またはその共同調査・自社研究)であることを示す利益相反の開示である(編集部判定)。
+    「引用ページ」列はサイト内のどのページがその出典を引いているかの逆引きで、未使用の出典は「未使用」と表示する。
+  </p>
+
+  <div class="summary-row">
+    <span class="count"><span class="badge high">high</span> {counts.high}件</span>
+    <span class="count"><span class="badge medium">medium</span> {counts.medium}件</span>
+    <span class="count"><span class="badge low">low</span> {counts.low}件</span>
+    <span class="count total">計 {sorted.length}件</span>
+  </div>
+
+  <div class="filters">
+    <label>
+      トピック
+      <select id="filter-topic">
+        <option value="">すべて</option>
+        {allTopics.map((t) => <option value={t}>{t}</option>)}
+      </select>
+    </label>
+    <label>
+      発行元
+      <select id="filter-publisher">
+        <option value="">すべて</option>
+        {allPublishers.map((p) => <option value={p}>{p}</option>)}
+      </select>
+    </label>
+    <span id="visible-count" class="count total"></span>
+  </div>
+
+  <div class="table-wrap">
+    <table id="sources-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>タイトル</th>
+          <th>発行元</th>
+          <th>発行日</th>
+          <th>取得日</th>
+          <th>言語</th>
+          <th>信頼度</th>
+          <th>引用ページ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {sorted.map((e) => (
+          <tr data-topics={e.data.topics.join('|')} data-publisher={e.data.publisher}>
+            <td class="id"><code>{e.data.id}</code></td>
+            <td>
+              <a href={e.data.url} target="_blank" rel="noopener noreferrer">{e.data.title}</a>
+              {hasCoi(e.data.publisher) && (
+                <span class="badge coi" title="調査主体がAI関連の製品・サービスを販売する事業会社(またはその共同調査・自社研究)。編集部判定">COI</span>
+              )}
+            </td>
+            <td>{e.data.publisher}</td>
+            <td class="nowrap">{fmtDate(e.data.published)}</td>
+            <td class="nowrap">{fmtDate(e.data.retrieved)}</td>
+            <td class="nowrap">{e.data.language}</td>
+            <td><span class={`badge ${e.data.reliability}`}>{e.data.reliability}</span></td>
+            <td class="cited-by">
+              {(citedBy.get(e.data.id) ?? []).length > 0
+                ? (citedBy.get(e.data.id) ?? []).map((p, i) => (
+                    <span>{i > 0 && ' '}<a href={`${base}${p.section}/${p.slug}/`} title={p.title}><code>{p.section}/{p.slug}</code></a></span>
+                  ))
+                : <span class="unused">未使用</span>}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const topicSel = document.getElementById('filter-topic') as HTMLSelectElement;
+    const pubSel = document.getElementById('filter-publisher') as HTMLSelectElement;
+    const counter = document.getElementById('visible-count') as HTMLElement;
+    const rows = document.querySelectorAll<HTMLTableRowElement>('#sources-table tbody tr');
+
+    function applyFilters() {
+      const topic = topicSel.value;
+      const publisher = pubSel.value;
+      let visible = 0;
+      rows.forEach((row) => {
+        const topics = (row.dataset.topics ?? '').split('|');
+        const show =
+          (topic === '' || topics.includes(topic)) &&
+          (publisher === '' || row.dataset.publisher === publisher);
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      counter.textContent =
+        topic === '' && publisher === '' ? '' : `絞り込み結果: ${visible}件`;
+    }
+
+    topicSel.addEventListener('change', applyFilters);
+    pubSel.addEventListener('change', applyFilters);
+  </script>
+
+  <style>
+    .note { color: var(--muted); font-size: 0.9rem; }
+    .summary-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin: 1rem 0 1rem;
+      font-size: 0.9rem;
+    }
+    .count.total { color: var(--muted); }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
+      margin: 0 0 1.5rem;
+      font-size: 0.85rem;
+    }
+    .filters select {
+      max-width: 18rem;
+      margin-left: 0.25rem;
+      font-size: 0.85rem;
+      background: transparent;
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.2rem 0.3rem;
+    }
+    .table-wrap { overflow-x: auto; }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.85rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: color-mix(in srgb, var(--fg) 5%, transparent); }
+    .nowrap { white-space: nowrap; }
+    .id { white-space: nowrap; }
+    .cited-by { font-size: 0.8rem; }
+    .cited-by code { font-size: 0.75rem; }
+    .unused { color: var(--muted); }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      border-radius: 4px;
+      padding: 0.05rem 0.45rem;
+      border: 1px solid var(--border);
+    }
+    .badge.high { background: #2e7d3230; border-color: #2e7d32; }
+    .badge.medium { background: #b3540030; border-color: #b35400; }
+    .badge.low { background: #88888830; border-color: #888; }
+    .badge.coi { background: #8e24aa30; border-color: #8e24aa; margin-left: 0.3rem; }
+  </style>
+</Base>

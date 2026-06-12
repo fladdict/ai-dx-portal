@@ -1,0 +1,164 @@
+---
+import Base from '../layouts/Base.astro';
+import { SECTIONS } from '../lib/sections';
+
+const base = import.meta.env.BASE_URL;
+
+// セクションid → 一覧カード用の短い説明(表示名は lib/sections.ts が正)
+const SECTION_DESCRIPTIONS: Record<keyof typeof SECTIONS, string> = {
+  principles:
+    '陳腐化しない土台。AIDXの定義、時間軸の考え方、反脆弱性、複利の法則、負債とスロップの分類学。',
+  readiness:
+    '目指す状態の定義と診断。組織の受容能力を5つの資産で測り、成熟度モデルと自己診断で現在地を掴む。',
+  organization:
+    '本サイトの主戦場。業務分解と再配置、実行者から検証者へのシフト、育成パイプライン、推進体制とガバナンス。',
+  roadmap:
+    'どこから手をつけるか。最初の90日、投資判断の5択、1年プランと3年シナリオ。「待つ」も正当な戦略として扱う。',
+  departments:
+    '10部門それぞれについて「業務構造はどう変わるか、いまやるべき準備は何か」を共通フレームで示す。',
+  patterns:
+    'ツールが変わっても残る、抽象化された業務パターン。コアは業務設計であり、特定ツールに依存しない。',
+  'anti-patterns':
+    '負債・スロップの実例カタログ。症状・なぜ起きるか・放置コスト・脱出方法をカード形式で示す。',
+};
+
+// 看板コンテンツ(外部から単独リンクされる1枚)。
+// 前半4枚=枠組み、後半3枚=経営計画・投資・撤退の実務(2026-06-11 第5陣レビューで昇格)
+const FLAGSHIPS = [
+  {
+    href: `${base}principles/debt-slop-taxonomy/`,
+    title: '負債とスロップの分類学',
+    desc: 'AI投資の結末を分類し、判定フローチャートで「本格投資/使い捨て構築/実験/待つ/やらない」に振り分ける。',
+  },
+  {
+    href: `${base}readiness/self-assessment/`,
+    title: 'AI-Ready自己診断',
+    desc: '5資産×25問のチェックリスト。ツール導入度ではなく組織の受容能力で現在地を測る。',
+  },
+  {
+    href: `${base}roadmap/investment-decision/`,
+    title: '投資判断の5択',
+    desc: '本格投資/使い捨て構築/実験/待つ/やらない。調達経路の設計とポートフォリオ・ガバナンス。',
+  },
+  {
+    href: `${base}roadmap/first-90-days/`,
+    title: '最初の90日',
+    desc: 'どこから手をつけ、どの順に進めるか。着手順序のテンプレート。',
+  },
+  {
+    href: `${base}roadmap/business-translation/`,
+    title: '経営計画への翻訳',
+    desc: 'AIDXをフェーズ・投資配分・体制・決裁の4点セットで中計・予算・取締役会決議に落とす。様式同梱。',
+  },
+  {
+    href: `${base}roadmap/return-structure/`,
+    title: 'AIDXのリターン構造',
+    desc: '投資判断の5択に期待値の断面を加え、「うちは成功する側に入る」という根拠なき前提を稟議から外す。',
+  },
+  {
+    href: `${base}roadmap/exit-playbook/`,
+    title: '撤退プレイブック',
+    desc: '撤退は失敗の認定ではなく3資産の回収である。判定後の伝え方・契約の巻き戻し・学習の回収の段取り。',
+  },
+];
+---
+<Base title="ホーム">
+  <section class="hero">
+    <h1>AIDXはツール導入ではなく、組織の再設計である</h1>
+    <p>
+      モデルとツールは陳腐化するが、構造化された業務・データ・人の検証能力は複利で効く。
+      本サイトは、数年後に組織がAIに「しっかり乗れている」状態から逆算して、
+      いま何をすべきか・何を待つべきか・何を捨てるべきかを体系化した実践ナレッジである。
+    </p>
+  </section>
+
+  <h2>読者別の入口</h2>
+  <div class="entry-grid">
+    <div class="entry-card">
+      <h3>推進担当者はここから</h3>
+      <p>着手順序を先に固め、方法論と部門別の具体策へ進む。</p>
+      <ol>
+        <li><a href={`${base}roadmap/first-90-days/`}>最初の90日</a> — 着手順序を決める</li>
+        <li><a href={`${base}organization/`}>組織・人材編</a> — 業務分解と人材再配置の方法論</li>
+        <li><a href={`${base}departments/`}>部門別ガイド</a> — 自部門の具体策(<a href={`${base}departments-map/`}>部門間の比較表</a>)</li>
+      </ol>
+    </div>
+    <div class="entry-card">
+      <h3>経営層はここから</h3>
+      <p>全体像と投資判断の枠組みを掴み、経営計画に翻訳する。</p>
+      <ol>
+        <li><a href={`${base}principles/`}>原理編</a> — 何が資産になり、何が負債になるか</li>
+        <li><a href={`${base}roadmap/investment-decision/`}>投資判断の5択</a> — 承認・否認の語彙を揃える</li>
+        <li><a href={`${base}roadmap/business-translation/`}>経営計画への翻訳</a> — 中計・予算・決議の4点セットに落とす</li>
+      </ol>
+    </div>
+    <div class="entry-card">
+      <h3>取締役・監査役はここから</h3>
+      <p>執行の細部ではなく、監督側の責務と道具立てを先に揃える。</p>
+      <ol>
+        <li><a href={`${base}organization/board-oversight/`}>取締役会の監督義務</a> — 監督4点と半期アジェンダ。内部統制の基本方針は取締役会の専決</li>
+        <li><a href={`${base}organization/governance-structure/`}>推進体制とガバナンスの設計図</a> — 執行側の規程骨子と検証義務化ラインの確認先</li>
+        <li><a href={`${base}roadmap/exit-playbook/`}>撤退プレイブック</a> — 投資の規律の出口側。撤退・凍結を例外処理にしない</li>
+      </ol>
+    </div>
+  </div>
+
+  <h2>コンテンツ構成</h2>
+  <p class="lead-note">
+    迷ったら——自部門に固有の業務から着手するなら部門別ガイド、部門をまたぐ共通業務(文書生成・議事録・問い合わせ対応等)から着手するなら業務パターン集が入口になる。
+  </p>
+  <div class="section-grid">
+    {Object.entries(SECTIONS).map(([id, label]) => (
+      <a class="section-card" href={`${base}${id}/`}>
+        <h3>{label}</h3>
+        <p>{SECTION_DESCRIPTIONS[id as keyof typeof SECTIONS]}</p>
+      </a>
+    ))}
+  </div>
+
+  <h2>看板コンテンツ</h2>
+  <p class="lead-note">単独で引用・配布できる形に作り込んだ7枚。最初の4枚で枠組みを掴み、後の3枚で経営計画・投資・撤退の実務に落とす。</p>
+  <ul class="flagship-list">
+    {FLAGSHIPS.map((f) => (
+      <li>
+        <a href={f.href}>{f.title}</a>
+        <p>{f.desc}</p>
+      </li>
+    ))}
+  </ul>
+
+  <style>
+    .hero h1 { line-height: 1.4; }
+    .entry-grid,
+    .section-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+    .entry-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem 1rem;
+    }
+    .entry-card h3 { margin: 0.25rem 0 0.5rem; font-size: 1rem; }
+    .entry-card p { margin: 0 0 0.5rem; color: var(--muted); font-size: 0.85rem; }
+    .entry-card ol { margin: 0; padding-left: 1.25rem; font-size: 0.9rem; }
+    .entry-card li { margin-bottom: 0.25rem; }
+    .section-card {
+      display: block;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem 1rem;
+      text-decoration: none;
+      color: var(--fg);
+    }
+    .section-card:hover { border-color: var(--accent); }
+    .section-card h3 { margin: 0.25rem 0 0.5rem; font-size: 1rem; color: var(--accent); }
+    .section-card p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+    .lead-note { color: var(--muted); font-size: 0.9rem; margin-top: -0.5rem; }
+    .flagship-list { list-style: none; padding: 0; }
+    .flagship-list li { margin-bottom: 1rem; }
+    .flagship-list a { font-weight: 600; }
+    .flagship-list p { margin: 0.15rem 0 0; color: var(--muted); font-size: 0.85rem; }
+  </style>
+</Base>

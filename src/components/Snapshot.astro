@@ -1,0 +1,26 @@
+---
+// 2層ルール(05-content-strategy.md): 具体的なツール名・モデル名・価格は
+// このコンポーネントの中にのみ書ける。本文(core)への記載は執筆規約違反。
+interface Props {
+  date: string; // 例: "2026-06"
+}
+const { date } = Astro.props;
+---
+<aside class="snapshot">
+  <div class="snapshot-label">📌 {date} 時点のスナップショット — 内容は定期的に入れ替わります</div>
+  <slot />
+</aside>
+<style>
+  .snapshot {
+    border: 1px dashed var(--accent);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin: 1.5rem 0;
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+  }
+  .snapshot-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+</style>

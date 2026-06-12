@@ -1,0 +1,122 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = 'AIDX推進ポータル — AI活用による組織再設計のための実践ナレッジ' } = Astro.props;
+const base = import.meta.env.BASE_URL;
+// 2026-06-12 文体改修: 格言調見出し平易化・内部用語排除・見立て定型句を自然文に置換(フッター開示を出典タグ方式へ)
+---
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title} | AIDX推進ポータル</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a href={base} class="site-title">AIDX推進ポータル</a>
+      <nav>
+        <a href={`${base}principles/`}>原理</a>
+        <a href={`${base}readiness/`}>AI-Ready</a>
+        <a href={`${base}organization/`}>組織・人材</a>
+        <a href={`${base}roadmap/`}>ロードマップ</a>
+        <a href={`${base}departments/`}>部門別</a>
+        <a href={`${base}patterns/`}>業務パターン</a>
+        <a href={`${base}anti-patterns/`}>アンチパターン</a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a href={`${base}sources/`}>出典</a>
+        <a href={`${base}glossary/`}>用語集</a>
+        <a href={`${base}about/`}>About</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <p>
+        本サイトのコンテンツはAIが生成し人間が検証しています。事実には出典タグを付しており、出典タグのない推奨・解釈は編集部の見解です。
+      </p>
+    </footer>
+    <style is:global>
+      :root {
+        --fg: #1a1a1a;
+        --bg: #ffffff;
+        --muted: #666;
+        --accent: #0b5fa5;
+        --border: #e0e0e0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --fg: #e8e8e8;
+          --bg: #121212;
+          --muted: #9a9a9a;
+          --accent: #6db3e8;
+          --border: #333;
+        }
+      }
+      body {
+        margin: 0;
+        color: var(--fg);
+        background: var(--bg);
+        font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+        line-height: 1.8;
+      }
+      .site-header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.5rem;
+        align-items: baseline;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .site-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--fg);
+        text-decoration: none;
+      }
+      nav a {
+        margin-right: 1rem;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+      nav a:hover { color: var(--accent); }
+      .nav-sep {
+        display: inline-block;
+        width: 1px;
+        height: 0.9em;
+        background: var(--border);
+        margin-right: 1rem;
+        vertical-align: middle;
+      }
+      main {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 4rem;
+      }
+      a { color: var(--accent); }
+      .site-footer {
+        border-top: 1px solid var(--border);
+        padding: 1.5rem;
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+      .diagram {
+        margin: 1.5rem 0;
+        padding: 1rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow-x: auto;
+        text-align: center;
+      }
+      .diagram svg {
+        max-width: 100%;
+        height: auto;
+      }
+    </style>
+  </body>
+</html>

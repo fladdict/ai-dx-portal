@@ -1,0 +1,134 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+const entries = await getCollection('glossary');
+// 読み(なければ用語)の五十音・アルファベット順
+const sorted = entries.sort((a, b) =>
+  (a.data.reading ?? a.data.term).localeCompare(b.data.reading ?? b.data.term, 'ja')
+);
+
+// 五十音インデックス: 読みの先頭文字から行(あ〜わ)を判定する
+const KANA_ROWS: [string, string][] = [
+  ['あ', 'アイウエオァィゥェォヴ'],
+  ['か', 'カキクケコガギグゲゴ'],
+  ['さ', 'サシスセソザジズゼゾ'],
+  ['た', 'タチツテトダヂヅデドッ'],
+  ['な', 'ナニヌネノ'],
+  ['は', 'ハヒフヘホバビブベボパピプペポ'],
+  ['ま', 'マミムメモ'],
+  ['や', 'ヤユヨャュョ'],
+  ['ら', 'ラリルレロ'],
+  ['わ', 'ワヲン'],
+];
+const toKatakana = (s: string) =>
+  s.replace(/[ぁ-ゖ]/g, (c) => String.fromCharCode(c.charCodeAt(0) + 0x60));
+const rowOf = (reading: string): string => {
+  const first = toKatakana(reading).charAt(0);
+  for (const [label, chars] of KANA_ROWS) if (chars.includes(first)) return `${label}行`;
+  return '英数';
+};
+
+// 行ごとにグループ化(出現順=五十音順を保持)
+const groups: { label: string; items: typeof sorted }[] = [];
+for (const e of sorted) {
+  const label = rowOf(e.data.reading ?? e.data.term);
+  const g = groups.find((x) => x.label === label);
+  if (g) g.items.push(e);
+  else groups.push({ label, items: [e] });
+}
+---
+<Base title="用語集" description="本サイトで使う用語の定義と表記の統一(五十音インデックス・用語別アンカー付き)">
+  <h1>用語集</h1>
+  <p>
+    本サイトの用語はこの定義に従って統一している。「使わない表記」は、
+    意味のぶれ・表記ゆれを防ぐためにサイト内で使用しない語である。
+  </p>
+  <p class="note">
+    各用語にはページ内アンカー(<code>#用語名</code>)があり、他ページから
+    <code>/glossary/#生成AI</code> のように直接リンクできる。
+  </p>
+
+  <nav class="gojuon" aria-label="五十音インデックス">
+    {groups.map((g) => <a href={`#row-${g.label}`}>{g.label}</a>)}
+  </nav>
+
+  {groups.map((g) => (
+    <section>
+      <h2 id={`row-${g.label}`}>{g.label}</h2>
+      <dl class="glossary">
+        {g.items.map((e) => (
+          <div class="entry" id={e.data.term}>
+            <dt>
+              {e.data.term}
+              {e.data.reading && <span class="reading">({e.data.reading})</span>}
+              <a class="anchor" href={`#${e.data.term}`} aria-label={`${e.data.term}へのリンク`}>#</a>
+            </dt>
+            <dd>
+              <p>{e.data.definition}</p>
+              {e.data.forbidden.length > 0 && (
+                <p class="forbidden">
+                  使わない表記: {e.data.forbidden.join(' / ')}
+                </p>
+              )}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  ))}
+
+  <style>
+    .note { color: var(--muted); font-size: 0.9rem; }
+    .gojuon {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.9rem;
+    }
+    .gojuon a {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.15rem 0.6rem;
+      text-decoration: none;
+    }
+    .gojuon a:hover { border-color: var(--accent); }
+    section h2 {
+      font-size: 1rem;
+      color: var(--muted);
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.25rem;
+      margin: 2rem 0 0;
+      scroll-margin-top: 1rem;
+    }
+    .glossary { margin: 0; }
+    .entry {
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+      scroll-margin-top: 1rem;
+    }
+    dt { font-weight: 700; font-size: 1.05rem; }
+    .reading {
+      font-weight: 400;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-left: 0.25rem;
+    }
+    .anchor {
+      margin-left: 0.4rem;
+      font-weight: 400;
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .anchor:hover { color: var(--accent); }
+    dd { margin: 0.4rem 0 0; }
+    dd p { margin: 0; }
+    .forbidden {
+      margin-top: 0.4rem !important;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</Base>

@@ -1,0 +1,81 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { SECTIONS } from '../../lib/sections';
+
+export async function getStaticPaths() {
+  const sections = [
+    'principles',
+    'readiness',
+    'organization',
+    'roadmap',
+    'departments',
+    'patterns',
+    'anti-patterns',
+  ];
+  const paths = [];
+  for (const section of sections) {
+    // draft / review は開発時のみ表示。公開ビルドには published だけが入る
+    const entries = await getCollection(
+      section as any,
+      ({ data }: any) => import.meta.env.DEV || data.status === 'published'
+    );
+    for (const entry of entries) {
+      paths.push({ params: { section, slug: entry.id }, props: { entry, section } });
+    }
+  }
+  return paths;
+}
+
+const { entry, section } = Astro.props as any;
+const { Content } = await render(entry);
+const base = import.meta.env.BASE_URL;
+const sectionLabel = SECTIONS[section as keyof typeof SECTIONS] ?? section;
+---
+<Base title={entry.data.title} description={entry.data.summary}>
+  <nav class="breadcrumb">
+    <a href={base}>ホーム</a> › <a href={`${base}${section}/`}>{sectionLabel}</a>
+  </nav>
+  {entry.data.status !== 'published' && (
+    <p class="draft-banner">⚠ このページは下書き({entry.data.status})です。公開ビルドには含まれません。</p>
+  )}
+  <h1>{entry.data.title}</h1>
+  <aside class="exec-summary">
+    <strong>要点</strong>
+    <p>{entry.data.summary}</p>
+  </aside>
+  <Content />
+  <footer class="article-meta">
+    <p>
+      最終更新: {entry.data.updated.toISOString().slice(0, 10)} ／
+      次回レビュー期限: {entry.data.review_by.toISOString().slice(0, 10)}
+    </p>
+    {entry.data.sources.length > 0 && (
+      <p>出典: {entry.data.sources.map((s: string) => <code>{s} </code>)}</p>
+    )}
+  </footer>
+  <style>
+    .breadcrumb { font-size: 0.85rem; color: var(--muted); }
+    .draft-banner {
+      background: #b3540020;
+      border: 1px solid #b35400;
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+    .exec-summary {
+      border-left: 4px solid var(--accent);
+      padding: 0.5rem 1rem;
+      margin: 1.5rem 0;
+      background: color-mix(in srgb, var(--accent) 5%, transparent);
+    }
+    .exec-summary p { margin: 0.25rem 0 0; }
+    .article-meta {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+  </style>
+</Base>
