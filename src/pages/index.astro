@@ -103,6 +103,54 @@ const FLAGSHIPS = [
     </div>
   </div>
 
+  <h2>このサイトの使い方</h2>
+  <p class="lead-note">
+    導入の手引きとして読む場合の標準的な進み方。時期は目安であり、自社のペースに合わせて伸縮してよい。
+  </p>
+  <div class="table-wrap">
+    <table class="usage-table">
+      <thead>
+        <tr>
+          <th>時期</th>
+          <th>使うページ</th>
+          <th>到達点</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Day 1</td>
+          <td><a href={`${base}readiness/self-assessment/`}>AI-Ready自己診断</a></td>
+          <td>5資産×25問で現在地を判定する</td>
+        </tr>
+        <tr>
+          <td>Week 1–2</td>
+          <td><a href={`${base}roadmap/first-90-days/`}>最初の90日</a></td>
+          <td>推進オーナーを決め、施策台帳と利用実態調査を始める(様式: <a href={`${base}templates/ai-portfolio-ledger.csv`} download>AI施策台帳</a> / <a href={`${base}templates/guardrail-one-pager.md`} download>暫定ガードレール1枚</a>)</td>
+        </tr>
+        <tr>
+          <td>Week 3–4</td>
+          <td><a href={`${base}roadmap/investment-decision/`}>投資判断の5択</a></td>
+          <td>台帳の各施策を本格投資/使い捨て構築/実験/待つ/やらないに分類する</td>
+        </tr>
+        <tr>
+          <td>Month 2</td>
+          <td><a href={`${base}organization/work-redesign/`}>業務分解×再配置プレイブック</a> + <a href={`${base}patterns/`}>業務パターン集</a></td>
+          <td>1業務の分解パイロットを回し、検証者付きの委任を経験する。移行前の処理時間・差し戻し率(before値)をここで取得する</td>
+        </tr>
+        <tr>
+          <td>Month 3</td>
+          <td><a href={`${base}roadmap/business-translation/`}>経営計画への翻訳</a></td>
+          <td>結果を経営会議・予算(フェーズ・投資配分・体制・決裁の4点セット)に接続する</td>
+        </tr>
+        <tr>
+          <td>継続運用</td>
+          <td><a href={`${base}anti-patterns/`}>アンチパターン集</a> + <a href={`${base}roadmap/exit-playbook/`}>撤退プレイブック</a></td>
+          <td>症状チェックと撤退・凍結の定例運用で負債化を予防する</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <h2>コンテンツ構成</h2>
   <p class="lead-note">
     迷ったら——自部門に固有の業務から着手するなら部門別ガイド、部門をまたぐ共通業務(文書生成・議事録・問い合わせ対応等)から着手するなら業務パターン集が入口になる。
@@ -156,6 +204,20 @@ const FLAGSHIPS = [
     .section-card h3 { margin: 0.25rem 0 0.5rem; font-size: 1rem; color: var(--accent); }
     .section-card p { margin: 0; color: var(--muted); font-size: 0.85rem; }
     .lead-note { color: var(--muted); font-size: 0.9rem; margin-top: -0.5rem; }
+    .table-wrap { overflow-x: auto; }
+    .usage-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.85rem;
+    }
+    .usage-table th, .usage-table td {
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.6rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    .usage-table th { background: color-mix(in srgb, var(--fg) 5%, transparent); }
+    .usage-table td:first-child { white-space: nowrap; font-weight: 600; }
     .flagship-list { list-style: none; padding: 0; }
     .flagship-list li { margin-bottom: 1rem; }
     .flagship-list a { font-weight: 600; }

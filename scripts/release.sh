@@ -1,36 +1,29 @@
 #!/bin/bash
-# 公開リポジトリへのリリーススクリプト
-# ローカルrepo(全履歴・運営ファイル込み)から、公開対象ファイルのみのスナップショットを
-# fladdict/ai-dx-portal へ単一コミットとして force push する。
-# 非公開: .claude/ CLAUDE.md docs/ README.md(企画版) .git node_modules dist .astro
+# 公開リポジトリ(fladdict/ai-dx-portal)へのリリーススクリプト — orphanブランチ方式
+# ローカルmain(全履歴・運営ファイル込み)から、公開対象のみを release ブランチに乗せて push する。
+# 非公開: .claude/ CLAUDE.md docs/ README.md(企画版) README.public.md
+# 注意: main がクリーン(未コミットなし)であること。公開READMEは README.public.md を編集する。
 set -euo pipefail
 
-SRC="$(cd "$(dirname "$0")/.." && pwd)"
-REMOTE="https://github.com/fladdict/ai-dx-portal.git"
-TMP="$(mktemp -d)"
-trap 'rm -rf "$TMP"' EXIT
+cd "$(dirname "$0")/.."
 
-rsync -a \
-  --exclude '.git' \
-  --exclude '.claude' \
-  --exclude 'CLAUDE.md' \
-  --exclude 'docs' \
-  --exclude 'README.md' \
-  --exclude 'README.public.md' \
-  --exclude 'node_modules' \
-  --exclude 'dist' \
-  --exclude '.astro' \
-  --exclude '.DS_Store' \
-  "$SRC/" "$TMP/"
+if [ -n "$(git status --porcelain)" ]; then
+  echo "エラー: 未コミットの変更があります。コミットしてから実行してください" >&2
+  exit 1
+fi
 
-cp "$SRC/README.public.md" "$TMP/README.md"
-
-cd "$TMP"
-git init -q -b main
-git config user.email "fukatsu@gmail.com"
-git config user.name "fladdict"
+git checkout release
+# 公開対象をmainの最新で上書き(削除も反映するため一旦インデックスを同期)
+git checkout main -- .github .gitignore CHANGELOG.md astro.config.mjs package.json package-lock.json scripts sources src README.public.md
+cp README.public.md README.md
+git rm -q --cached README.public.md || true
+rm README.public.md
 git add -A
-git commit -q -m "release: $(date +%Y-%m-%d)"
-git push -f "$REMOTE" main
-
-echo "released: $(git rev-parse --short HEAD) -> $REMOTE"
+if git diff --cached --quiet; then
+  echo "変更なし。リリース不要"
+else
+  git commit -m "release: $(date +%Y-%m-%d)"
+  git push public release:main
+fi
+git checkout -f main
+echo "done. main に戻りました"

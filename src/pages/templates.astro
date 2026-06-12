@@ -1,0 +1,110 @@
+---
+import Base from '../layouts/Base.astro';
+const base = import.meta.env.BASE_URL;
+
+const templates = [
+  {
+    file: 'ai-portfolio-ledger.csv',
+    name: 'AI施策台帳',
+    format: 'CSV',
+    use: '進行中・計画中のAI施策を、対象業務・5択の出口・撤退条件・次回再判定日・撤退条件発動日・最終更新日付きで一覧化する(記入例2行付き)。',
+    refHref: `${base}principles/debt-slop-taxonomy/`,
+    refLabel: '原理編「負債とスロップの分類学」',
+  },
+  {
+    file: 'guardrail-one-pager.md',
+    name: '暫定ガードレール1枚',
+    format: 'Markdown',
+    use: '利用規程の完成を待たずに先行発行する1枚文書。入力可否のデータ分類3等級・検証義務・相談先を定める。',
+    refHref: `${base}organization/governance-structure/`,
+    refLabel: '組織・人材編「推進体制とガバナンスの設計図」',
+  },
+  {
+    file: 'work-decomposition-worksheet.csv',
+    name: '業務分解ワークシート',
+    format: 'CSV',
+    use: '業務をタスクにほどき、4分類とAI委任・協働・人間保持の判定、検証者・移行時期、処理時間(移行前/移行後)を記入する(月次レポートの記入例付き)。',
+    refHref: `${base}organization/work-redesign/`,
+    refLabel: '組織・人材編「業務分解×再配置プレイブック」',
+  },
+  {
+    file: 'exec-report-one-pager.md',
+    name: '経営会議報告1枚',
+    format: 'Markdown',
+    use: '5資産の点数・最弱資産・施策台帳の5択分布・KPI3層の主要値・次四半期の一手を四半期ごとに1枚で報告する。',
+    refHref: `${base}readiness/self-assessment/`,
+    refLabel: 'AI-Ready編「AI-Ready自己診断」',
+  },
+  {
+    // 2026-06-12 外部評価対応(site-guidance必須修正1): 旧 kpi-definitions.csv から差し替え。
+    // TODO(順序依存): roadmap/kpi-design「成果をどう測るか」公開時に refHref/refLabel を
+    // `${base}roadmap/kpi-design/` / ロードマップ編「成果をどう測るか」へ切り替える
+    // (draftは公開ビルドに含まれずリンク切れになるため、公開までは return-structure を参照先とする)
+    file: 'kpi-definition-sheet.csv',
+    name: 'KPI定義シート',
+    format: 'CSV',
+    use: '健全性/組み込み/成果の3層のKPIを、定義・算出式・観測者・頻度・記録場所まで指定して管理する。',
+    refHref: `${base}roadmap/return-structure/`,
+    refLabel: 'ロードマップ編「AIDXのリターン構造」',
+  },
+];
+---
+<Base title="テンプレート" description="AI施策台帳・暫定ガードレール・業務分解ワークシート・経営会議報告・KPI定義シートの配布様式">
+  <h1>配布テンプレート</h1>
+  <p>
+    本サイトの各ページで示している様式を、そのまま記入して使えるファイルとして配布する。
+    CSVはExcelでそのまま開ける(UTF-8 BOM付き)。Markdownは社内のWiki・文書ツールに貼り付けて使う。
+  </p>
+  <aside class="caution">
+    これらは叩き台である。記入例の数値・条件はすべて架空の例示であり、自社の実態を保証しない。
+    90日以内に、自社の実測値(処理時間・差し戻し率・検証工数)と自社の規程(データ分類・決裁権限)に合わせて置き換えること。
+  </aside>
+  <ul class="template-list">
+    {templates.map((t) => (
+      <li>
+        <p class="template-title">
+          <a href={`${base}templates/${t.file}`} download>{t.name}({t.format})</a>
+          <code>{t.file}</code>
+        </p>
+        <p class="template-use">{t.use}</p>
+        <p class="template-ref">解説: <a href={t.refHref}>{t.refLabel}</a></p>
+      </li>
+    ))}
+  </ul>
+  <style>
+    .caution {
+      border-left: 4px solid #b35400;
+      background: #b3540015;
+      padding: 0.75rem 1rem;
+      margin: 1.5rem 0;
+    }
+    .template-list {
+      list-style: none;
+      padding: 0;
+    }
+    .template-list li {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .template-title {
+      margin: 0;
+      font-weight: 700;
+    }
+    .template-title code {
+      margin-left: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .template-use {
+      margin: 0.5rem 0 0;
+    }
+    .template-ref {
+      margin: 0.25rem 0 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+  </style>
+</Base>
