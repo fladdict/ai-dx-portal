@@ -31,6 +31,27 @@ const { entry, section } = Astro.props as any;
 const { Content } = await render(entry);
 const base = import.meta.env.BASE_URL;
 const sectionLabel = SECTIONS[section as keyof typeof SECTIONS] ?? section;
+
+// frontmatterのid参照(related/escape、patternsのdepartments)を関連ページリンクに解決する
+const ALL_SECTIONS = Object.keys(SECTIONS);
+async function findBySlug(slug: string) {
+  for (const s of ALL_SECTIONS) {
+    const hits = await getCollection(
+      s as any,
+      ({ id, data }: any) => id === slug && (import.meta.env.DEV || data.status === 'published')
+    );
+    if (hits.length) return { section: s, entry: hits[0] };
+  }
+  return null;
+}
+const relatedIds: string[] = [
+  ...((entry.data as any).related ?? []),
+  ...((entry.data as any).escape ?? []),
+  ...(section === 'patterns'
+    ? ((entry.data as any).departments ?? []).filter((d: string) => d !== 'all')
+    : []),
+];
+const relatedPages = (await Promise.all([...new Set(relatedIds)].map(findBySlug))).filter(Boolean);
 ---
 <Base title={entry.data.title} description={entry.data.summary}>
   <nav class="breadcrumb">
@@ -45,6 +66,20 @@ const sectionLabel = SECTIONS[section as keyof typeof SECTIONS] ?? section;
     <p>{entry.data.summary}</p>
   </aside>
   <Content />
+  {relatedPages.length > 0 && (
+    <nav class="related-pages">
+      <h2>関連ページ</h2>
+      <ul>
+        {relatedPages.map((p: any) => (
+          <li>
+            <a href={`${base}${p.section}/${p.entry.id}/`}>
+              {SECTIONS[p.section as keyof typeof SECTIONS]}「{p.entry.data.title.split(' — ')[0]}」
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )}
   <footer class="article-meta">
     <p>
       最終更新: {entry.data.updated.toISOString().slice(0, 10)} ／
@@ -70,6 +105,14 @@ const sectionLabel = SECTIONS[section as keyof typeof SECTIONS] ?? section;
       background: color-mix(in srgb, var(--accent) 5%, transparent);
     }
     .exec-summary p { margin: 0.25rem 0 0; }
+    .related-pages {
+      margin-top: 2.5rem;
+      padding: 0.75rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .related-pages h2 { font-size: 1rem; margin: 0.25rem 0 0.5rem; }
+    .related-pages ul { margin: 0; padding-left: 1.25rem; font-size: 0.9rem; }
     .article-meta {
       margin-top: 3rem;
       padding-top: 1rem;
